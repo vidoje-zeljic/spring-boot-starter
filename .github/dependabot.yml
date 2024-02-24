@@ -1,0 +1,22 @@
+version: 2
+registries:
+  fioneer-maven-virtual:
+    type: maven-repository
+    url: https://fioneer.jfrog.io/artifactory/fioneer-maven-virtual
+    username: ${{ secrets.ARTIFACTORY_READ_USERNAME }}
+    password: ${{ secrets.ARTIFACTORY_READ_PASSWORD }}
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    target-branch: "dev"
+
+  - package-ecosystem: "maven"
+    directory: "/"
+    registries:
+      - fioneer-maven-virtual
+    schedule:
+      interval: "weekly"
+    target-branch: "dev"
+
