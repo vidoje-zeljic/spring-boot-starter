@@ -13,7 +13,7 @@ class ProductController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     fun getAllProducts(): List<String> {
-        return listOf("p1", "p2", "p3")
+        return listOf("p1", "p2", "p3", "p4", "p5")
     }
 
 }
