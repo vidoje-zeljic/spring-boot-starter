@@ -38,29 +38,29 @@ jobs:
           path: target/*.jar
           retention-days: 1
 
-#  docker-build-push:
-#    if: github.event_name != 'pull_request'
-#    needs: java-build-test
-#    runs-on: ubuntu-latest
-#    permissions:
-#      contents: read
-#      packages: write
-#      id-token: write
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#      - name: Download Artifact
-#        uses: actions/download-artifact@master
-#        with:
-#          name: Package
-#          path: target
-#      - name: Log into registry ${{ env.REGISTRY }}
-#        uses: docker/login-action@v3
-#        with:
-#          registry: ${{ env.REGISTRY }}
-#          username: ${{ github.actor }}
-#          password: ${{ secrets.GITHUB_TOKEN }}
-#      - name: Build and push Docker image
-#        run: |
-#          docker build . -t ghcr.io/${{ github.repository }}:main
-#          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+  docker-build-push:
+    if: github.event_name != 'pull_request'
+    needs: java-build-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: Package
+          path: target
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image
+        run: |
+          docker build . -t ghcr.io/${{ github.repository }}:main
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
