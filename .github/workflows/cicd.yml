@@ -11,7 +11,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE: ghcr.io/vidoje-zeljic/spring-boot-starter:main
   AZ_GROUP: vidoje_group
-  AZ_APP_SERVICE: fe-vidoje
+  AZ_APP_SERVICE: be-vidoje
   AZ_APP_SERVICE_PLAN: Free
 
 permissions:
