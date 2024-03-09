@@ -5,14 +5,19 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE: ghcr.io/vidoje-zeljic/spring-boot-starter:main
+  AZ_GROUP: vidoje_group
+  AZ_APP_SERVICE: fe-vidoje
+  AZ_APP_SERVICE_PLAN: Free
 
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 jobs:
   java-build-test:
@@ -42,10 +47,6 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: java-build-test
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -62,5 +63,23 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push Docker image
         run: |
-          docker build . -t ghcr.io/${{ github.repository }}:main
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+          docker build . -t ${{ env.IMAGE }}
+          docker push ${{ env.IMAGE }}
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: docker-build-push
+    runs-on: ubuntu-latest
+    environment: cicd
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      - name: Deploy App
+        run: |
+          az webapp create -g ${{ env.AZ_GROUP }} -n ${{ env.AZ_APP_SERVICE }} -p ${{ env.AZ_APP_SERVICE_PLAN }} -i ${{ env.IMAGE }}
+          az webapp config appsettings set -g ${{ env.AZ_GROUP }} -n ${{ env.AZ_APP_SERVICE }} --settings SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          az webapp restart -g ${{ env.AZ_GROUP }} -n ${{ env.AZ_APP_SERVICE }}
